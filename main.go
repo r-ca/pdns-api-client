@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "net"
     "gopkg.in/ini.v1"
 )
 
@@ -11,6 +12,7 @@ type Config struct {
     HostName string
     Comment string
     TTL int
+    Interface string
 }
 
 var config Config
@@ -29,6 +31,7 @@ func init() {
         HostName: cfg.Section("me").Key("hostname").String(),
         Comment: cfg.Section("me").Key("comment").String(),
         TTL: cfg.Section("me").Key("ttl").MustInt(),
+        Interface: cfg.Section("me").Key("interface").String(),
     }
 }
 
@@ -44,6 +47,34 @@ func main() {
     logger(fmt.Sprintf("HostName: %s", config.HostName))
     logger(fmt.Sprintf("Comment: %s", config.Comment))
     logger(fmt.Sprintf("TTL: %d", config.TTL))
+    logger(fmt.Sprintf("Interface: %s", config.Interface))
+
+    logger(getMyIp())
 }
 
+func getMyIp() string {
+    iface, err := net.InterfaceByName(config.Interface)
+    if err != nil {
+        panic(err)
+    }
 
+    if iface.Flags&net.FlagUp == 0 {
+        panic("Interface is down")
+    }
+
+    // インタフェースに設定されているアドレスを取得
+    addrs, err := iface.Addrs()
+    if err != nil {
+        panic(err)
+    }
+    for _, addr := range addrs {
+        switch v := addr.(type) {
+        case *net.IPNet:
+            if v.IP.To4() != nil {
+            return v.IP.String()
+            }
+        }
+    }
+    
+    return ""
+}
