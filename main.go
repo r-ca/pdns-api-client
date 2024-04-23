@@ -15,6 +15,25 @@ type Config struct {
     Interface string
 }
 
+type Request struct {
+    RRset []RRset `json:"rrsets"`
+}
+
+type RRset struct {
+    Comment string `json:"comment"`
+    Name string `json:"name"`
+    ChangeType string `json:"changetype"`
+    Records []Record `json:"records"`
+    TTL int `json:"ttl"`
+    Type string `json:"type"`
+}
+
+type Record struct {
+    Content string `json:"content"`
+    Disabled bool `json:"disabled"`
+}
+
+
 var config Config
 const IS_DEBUG = true
 
